@@ -203,8 +203,25 @@ class BBotSimulation(gym.Env):
                 self.rgbd_hist_1 = []
         self.disable_cameras = disable_cameras
 
-        self.passive_viewer = mujoco.viewer.launch_passive(
-            self.model, self.data) if GUI else None
+        # Initialize passive viewer if GUI is requested
+        # On macOS, this requires running with mjpython instead of python
+        if GUI:
+            try:
+                self.passive_viewer = mujoco.viewer.launch_passive(
+                    self.model, self.data)
+            except RuntimeError as e:
+                if "mjpython" in str(e).lower():
+                    print(colored(
+                        "Warning: GUI requested but launch_passive requires mjpython on macOS. "
+                        "Running without viewer. To enable GUI, run with: mjpython your_script.py",
+                        "yellow",
+                        attrs=["bold"]
+                    ))
+                    self.passive_viewer = None
+                else:
+                    raise
+        else:
+            self.passive_viewer = None
 
         self.log_dir = None  #set in reset
 
