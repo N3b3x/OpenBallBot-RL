@@ -1,0 +1,68 @@
+algo:
+  batch_sz: 256
+  clip_range: 0.015
+  ent_coef: 0.001
+  learning_rate: -1
+  n_epochs: 5
+  n_steps: 2048
+  name: ppo
+  normalize_advantage: false
+  target_kl: 0.3
+  vf_coef: 2.0
+  weight_decay: 0.01
+camera:
+  disable_rgb: true
+  frame_rate: 90
+  height: 64
+  width: 64
+env:
+  max_allowed_tilt: 20
+  max_ep_steps: 4000
+  max_wheel_velocity: 10.0
+evaluation:
+  freq: 5000
+  n_episodes: 8
+frozen_cnn: /Users/nebex/Library/Mobile Documents/com~apple~CloudDocs/Documents/John
+  Hokins/1_CLASSES/FALL_2025/Reinforcement Learning/Final Project/OpenBallBot-RL/outputs/encoders/encoder_epoch_53
+hidden_sz: 128
+logging:
+  cams: false
+  reward_terms: false
+num_envs: 10
+out: ''
+policy:
+  config:
+    activation: leaky_relu
+    hidden_sizes:
+    - 128
+    - 128
+    - 128
+    - 128
+  type: mlp
+problem:
+  reward: &id001
+    config:
+      action_reg_coef: -0.0001
+      scale: 0.01
+      survival_bonus: 0.02
+      target_direction:
+      - 0.0
+      - 1.0
+    type: directional
+  terrain: &id002
+    config: {}
+    type: flat
+resume: ''
+reward: *id001
+seed: 10
+terrain: *id002
+total_timesteps: 10e6
+visualization:
+  periodic_viewer:
+    enabled: false
+    freq: 20000
+    n_episodes: 1
+  record_videos: true
+  render: false
+  video_episodes: 1
+  video_freq: on_new_best

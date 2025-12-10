@@ -1,0 +1,1 @@
+{"algo": "ppo", "num_envs": 10, "out": "outputs/experiments/runs/20251203_183500_ppo_perlin_directional_seed10", "resume": "", "seed": 10}
