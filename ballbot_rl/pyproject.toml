@@ -22,6 +22,10 @@ ballbot-train = "ballbot_rl.training.train:cli_main"
 ballbot-eval = "ballbot_rl.evaluation.evaluate:cli_main"
 ballbot-collect = "ballbot_rl.data.collect:cli_main"
 ballbot-pretrain = "ballbot_rl.encoders.pretrain:cli_main"
+ballbot-visualize-env = "ballbot_rl.visualization.visualize_env:main"
+ballbot-visualize-model = "ballbot_rl.visualization.visualize_model:main"
+ballbot-plot-training = "ballbot_rl.visualization.plot_training:main"
+ballbot-browse-env = "ballbot_rl.visualization.browse_environments:main"
 
 [project.optional-dependencies]
 dev = [
