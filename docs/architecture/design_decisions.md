@@ -424,7 +424,7 @@ This document explains why specific design choices were made in openballbot-rl. 
 2. **Speed**: Fast enough for RL training
 3. **Features**: Supports complex contact dynamics
 4. **Anisotropic friction**: Can be patched for omniwheels
-5. **Industry standard**: Widely used in robotics RL
+5. **Adoption**: Widely used in robotics RL research
 
 **Alternatives Considered:**
 - **PyBullet**: Good alternative, but less accurate
@@ -438,7 +438,7 @@ This document explains why specific design choices were made in openballbot-rl. 
 **Trade-offs:**
 - ✅ Accurate physics
 - ✅ Fast simulation
-- ✅ Industry standard
+- ✅ Widely adopted in research
 - ❌ Requires patching for omniwheels
 - ❌ Must build from source
 

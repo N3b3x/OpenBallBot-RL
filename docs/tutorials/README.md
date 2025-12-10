@@ -1,6 +1,6 @@
 # 📚 Reinforcement Learning Tutorials: Complete Guide
 
-*A comprehensive, world-class tutorial series on Reinforcement Learning for Robotics*
+*A comprehensive tutorial series on Reinforcement Learning for Robotics*
 
 ---
 

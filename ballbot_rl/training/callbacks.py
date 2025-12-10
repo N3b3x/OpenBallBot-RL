@@ -93,7 +93,7 @@ class RenderModeWrapper(VecEnvWrapper):
 
 class VideoRecorderOnBestCallback(BaseCallback):
     """
-    Record video when new best model is found (industry standard pattern).
+    Record video when new best model is found.
     
     This callback is triggered by EvalCallback when a new best model is found.
     It uses VecVideoRecorder to record videos efficiently without GUI rendering.
@@ -538,12 +538,12 @@ def create_training_callbacks(
     Returns:
         CallbackList: List of callbacks for training.
     """
-    # Get visualization settings from config (defaults follow industry standards)
+    # Get visualization settings from config
     viz_config = config.get("visualization", {})
-    record_videos = viz_config.get("record_videos", True)  # Default: ON (industry standard)
-    video_freq = viz_config.get("video_freq", "on_new_best")  # Industry standard
-    video_episodes = viz_config.get("video_episodes", 1)  # Industry standard
-    render = viz_config.get("render", False)  # Industry standard: disabled
+    record_videos = viz_config.get("record_videos", True)  # Default: ON
+    video_freq = viz_config.get("video_freq", "on_new_best")
+    video_episodes = viz_config.get("video_episodes", 1)
+    render = viz_config.get("render", False)  # Disabled for performance
     
     # Get evaluation settings from config
     eval_config = config.get("evaluation", {})
@@ -559,11 +559,11 @@ def create_training_callbacks(
         video_folder.mkdir(parents=True, exist_ok=True)
         
         # Get max episode length from config (from env config section)
-        # Default to 4000 if not specified (industry standard for ballbot)
+        # Default to 4000 if not specified
         max_ep_steps = config.get("env", {}).get("max_ep_steps", 4000)
         
         if video_freq == "on_new_best":
-            # Industry standard: Record videos when new best model found
+            # Record videos when new best model found
             # Use callback approach - records after evaluation finds new best
             # Async recording (default) runs in background thread to avoid blocking training
             async_recording = viz_config.get("async_video_recording", True)
@@ -611,7 +611,7 @@ def create_training_callbacks(
         eval_freq=eval_freq,
         n_eval_episodes=n_eval_episodes,
         deterministic=True,
-        render=render,  # Industry standard: False (disabled for performance)
+        render=render,  # False (disabled for performance)
         verbose=1,
         callback_on_new_best=video_callback,  # Record video when new best found
     )
