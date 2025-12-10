@@ -21,7 +21,7 @@
 #   - "configs/env/flat_directional.yaml"        (baseline)
 #   - "configs/env/perlin_directional_easy.yaml" (easier)
 #   - "configs/env/perlin_directional_hard.yaml" (harder)
-env_config: "configs/env/perlin_directional.yaml"
+env_config: "configs/env/flat_directional.yaml"
 
 # ----------------------------------------------------------------------------
 # ALGORITHM HYPERPARAMETERS
@@ -169,3 +169,81 @@ out: ""
 # - Different seeds: Different random initialization
 # - Recommended: Fixed seed (e.g., 10) for reproducibility
 seed: 10
+
+# ----------------------------------------------------------------------------
+# VISUALIZATION & MONITORING
+# ----------------------------------------------------------------------------
+# Configuration for training visualization and monitoring:
+# - Metrics logging: CSV + TensorBoard
+# - Video recording: Periodic recording of best models
+# - GUI rendering: Disabled during training for performance
+
+visualization:
+  # Video recording: Record videos of policy behavior
+  # - true: Record videos periodically
+  # - false: No video recording (faster, less insight)
+  record_videos: true
+  
+  # Video recording trigger
+  # - "on_new_best": Record only when new best model found
+  # - "every_eval": Record every evaluation (more videos, more disk space)
+  # - Integer N: Record every Nth evaluation (e.g., 5 = every 5th eval)
+  video_freq: "on_new_best"
+  
+  # Number of episodes per video
+  # - More episodes: Longer videos, more disk space
+  # - Fewer episodes: Shorter videos, less disk space
+  # - Recommended: 1 episode
+  video_episodes: 1
+  
+  # GUI rendering: Show MuJoCo viewer during training
+  # - true: Show MuJoCo viewer (slow, only for debugging)
+  # - false: No GUI (recommended for performance)
+  render: true
+  
+  # Periodic interactive visualization (separate from videos)
+  # Visualize during training to catch issues early, using a separate viewer
+  # process so it doesn't slow down training.
+  periodic_viewer:
+    # Enable periodic visualization
+    # - true: Visualize policy at intervals (useful for debugging and monitoring)
+    # - false: No periodic visualization
+    enabled: true
+    
+    # Visualization frequency: Steps between visualizations
+    # - Lower (5k-10k): More frequent visualization, better monitoring, slightly more overhead
+    # - Higher (50k-200k): Less frequent, less overhead, may miss intermediate behavior
+    # - Recommended: 10k-20k for low-dimensional control (ballbot)
+    # - Recommended: 50k-200k for high-dimensional locomotion
+    # - Current: 20000 (good balance for ballbot)
+    freq: 20000
+    
+    # Number of episodes per visualization
+    # - More episodes: Better insight into policy behavior, longer visualization time
+    # - Fewer episodes: Quicker visualization, less insight
+    # - Recommended: 1-3 episodes
+    # - Current: 1 (quick visual check)
+    n_episodes: 1
+    
+    # Maximum steps per episode during visualization
+    # - If not specified, uses env config default (4000)
+    # - Can be set lower for faster visualization (e.g., 1000 for quick checks)
+    # - Current: Uses env config default
+    # max_ep_steps: 4000  # Uncomment to override env config
+
+# Evaluation settings
+evaluation:
+  # Evaluation frequency: Steps between evaluations
+  # - PPO: 5k-10k steps
+  # - SAC/TD3: 500-1k steps
+  # - More frequent = more overhead, better monitoring
+  # - Less frequent = faster training, less insight
+  # - Current: 5000
+  freq: 5000
+  
+  # Number of episodes per evaluation
+  # - More episodes: Better performance estimate, slower evaluation
+  # - Fewer episodes: Faster evaluation, less reliable estimate
+  # - Recommended: 5-10 episodes
+  # - Current: 8
+  n_episodes: 8

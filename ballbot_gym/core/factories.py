@@ -15,7 +15,8 @@ def create_reward(config: Dict[str, Any]) -> BaseReward:
             "type": "directional",  # Name of registered reward
             "config": {              # Arguments for reward constructor
                 "target_direction": [0.0, 1.0],
-                "scale": 0.01
+                # Note: scale, action_reg_coef, survival_bonus are environment-level
+                # parameters and are NOT passed to the reward constructor
             }
         }
     
@@ -38,10 +39,43 @@ def create_reward(config: Dict[str, Any]) -> BaseReward:
     
     reward_config = config.get("config", {})
     
+    # Filter reward-specific parameters based on reward type
+    # Environment-level parameters (scale, action_reg_coef, survival_bonus) are
+    # handled by the environment, not passed to reward constructors
+    if reward_type == "directional":
+        # DirectionalReward only accepts target_direction
+        if "target_direction" not in reward_config:
+            raise ValueError("DirectionalReward requires 'target_direction' in config")
+        # Convert list to numpy array if needed
+        target_direction = reward_config["target_direction"]
+        if isinstance(target_direction, list):
+            target_direction = np.array(target_direction, dtype=np.float32)
+        reward_kwargs = {"target_direction": target_direction}
+    elif reward_type == "distance":
+        # DistanceReward accepts goal_position and scale
+        if "goal_position" not in reward_config:
+            raise ValueError("DistanceReward requires 'goal_position' in config")
+        goal_position = reward_config["goal_position"]
+        if isinstance(goal_position, list):
+            goal_position = np.array(goal_position, dtype=np.float32)
+        reward_kwargs = {
+            "goal_position": goal_position,
+            "scale": reward_config.get("scale", 1.0)
+        }
+    else:
+        # For unknown reward types, pass all config (let the reward class handle it)
+        # This allows custom rewards to work without modifying this function
+        reward_kwargs = reward_config
+    
     try:
-        return ComponentRegistry.get_reward(reward_type, **reward_config)
+        return ComponentRegistry.get_reward(reward_type, **reward_kwargs)
     except ValueError as e:
         raise ValueError(f"Failed to create reward '{reward_type}': {e}")
+    except TypeError as e:
+        # Provide more helpful error message for parameter mismatches
+        raise TypeError(
+            f"Failed to create reward '{reward_type}' with parameters {list(reward_kwargs.keys())}: {e}"
+        )
 
 
 def create_terrain(config: Dict[str, Any]) -> Callable:

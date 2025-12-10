@@ -20,12 +20,33 @@ def main(args, seed=None, eval_config=None):
 
     with torch.no_grad():
         model_path = Path(args.path).resolve()
-        if args.algo == "ppo":
-            model = PPO.load(str(model_path))
-        elif args.algo == "sac":
-            model = SAC.load(str(model_path))
+        
+        # Auto-detect algorithm (model files contain metadata)
+        # Try PPO first (most common), then SAC
+        model = None
+        if args.algo:
+            # User specified algorithm explicitly
+            if args.algo == "ppo":
+                model = PPO.load(str(model_path))
+            elif args.algo == "sac":
+                model = SAC.load(str(model_path))
+            else:
+                raise Exception(f"Unknown algorithm: {args.algo}. Supported: ppo, sac")
         else:
-            raise Exception("unknown algo")
+            # Auto-detect: try PPO first, then SAC
+            try:
+                model = PPO.load(str(model_path))
+                print(colored("✓ Auto-detected algorithm: PPO", "green"))
+            except Exception as e:
+                try:
+                    model = SAC.load(str(model_path))
+                    print(colored("✓ Auto-detected algorithm: SAC", "green"))
+                except Exception as e2:
+                    raise Exception(
+                        f"Failed to load model. Tried PPO and SAC.\n"
+                        f"PPO error: {e}\nSAC error: {e2}\n"
+                        f"You can specify --algo ppo or --algo sac explicitly."
+                    )
 
         # Determine terrain/reward configs
         # Priority: CLI override > eval config > model's training config
@@ -100,21 +121,48 @@ def main(args, seed=None, eval_config=None):
         n_test = eval_config.get("n_test_episodes", args.n_test) if eval_config else args.n_test
         deterministic = eval_config.get("deterministic", True) if eval_config else True
         
+        print(colored(f"\n🧪 Running {n_test} evaluation episode(s)...", "cyan", attrs=["bold"]))
+        print(colored(f"   Deterministic: {deterministic}", "cyan"))
+        
+        total_reward = 0.0
+        episode_lengths = []
+        
         for test_i in range(n_test):
             obs, _ = env.reset(seed=seed + test_i)
             done = False
 
-            G_tau = 0
+            G_tau = 0  # Discounted return
             gamma = 0.99999
+            episode_reward = 0.0
             count = 0
+            
             while not done:
                 action, _ = model.predict(obs, deterministic=deterministic)
-                obs, reward, done, truncated, info = env.step(action)
+                obs, reward, terminated, truncated, info = env.step(action)
 
                 G_tau += gamma**count * reward
+                episode_reward += reward
                 count += 1
+                done = terminated or truncated
 
-            print("G_tau==", G_tau)
+            total_reward += episode_reward
+            episode_lengths.append(count)
+            print(colored(
+                f"  Episode {test_i + 1}/{n_test}: "
+                f"Reward={episode_reward:.2f}, "
+                f"Length={count} steps, "
+                f"Discounted Return (G_tau)={G_tau:.2f}",
+                "green"
+            ))
+        
+        avg_reward = total_reward / n_test
+        avg_length = np.mean(episode_lengths)
+        print(colored(
+            f"\n📊 Summary: "
+            f"Avg Reward={avg_reward:.2f} ± {np.std([total_reward/n_test]):.2f}, "
+            f"Avg Length={avg_length:.1f} ± {np.std(episode_lengths):.1f}",
+            "cyan", attrs=["bold"]
+        ))
 
     env.close()
 
@@ -124,8 +172,13 @@ def main(args, seed=None, eval_config=None):
 def cli_main():
     """CLI entry point for evaluation."""
     _parser = argparse.ArgumentParser(description="Test a policy.")
-    _parser.add_argument("--algo", type=str, help="choices are ppo, ...")
-    _parser.add_argument("--path", type=str, help="path to policy")
+    _parser.add_argument(
+        "--algo", 
+        type=str, 
+        default=None,
+        help="Algorithm type (ppo, sac). If not specified, will auto-detect from model file."
+    )
+    _parser.add_argument("--path", type=str, required=True, help="path to policy")
     _parser.add_argument("--n_test",
                          type=int,
                          help="How many times to test policy",

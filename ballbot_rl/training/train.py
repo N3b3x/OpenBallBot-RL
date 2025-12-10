@@ -244,20 +244,43 @@ def main(config, seed):
                 attrs=["bold"]))
     print(model.policy.optimizer)
     print(colored(f"total_timesteps={total_timesteps}", "yellow"))
+    
+    # Calculate and display updates per rollout with detailed breakdown
     num_updates_per_rollout = (
         config["algo"]["n_epochs"] * config["num_envs"] *
         config["algo"]["n_steps"]) / config["algo"]["batch_sz"]
+    
+    # Print prominent warning with detailed information
+    print("\n" + "=" * 80)
+    print(colored("⚠️  TRAINING CONFIGURATION WARNING", "yellow", attrs=["bold"]))
+    print("=" * 80)
+    print(colored(f"\nThe current configuration will result in:", "yellow", attrs=["bold"]))
+    print(colored(f"  • {num_updates_per_rollout:.1f} gradient updates per rollout", "yellow"))
+    print(f"\nConfiguration breakdown:")
+    print(f"  • n_epochs: {config['algo']['n_epochs']}")
+    print(f"  • num_envs: {config['num_envs']}")
+    print(f"  • n_steps: {config['algo']['n_steps']}")
+    print(f"  • batch_sz: {config['algo']['batch_sz']}")
+    print(f"\nCalculation: ({config['algo']['n_epochs']} epochs × {config['num_envs']} envs × {config['algo']['n_steps']} steps) / {config['algo']['batch_sz']} batch = {num_updates_per_rollout:.1f} updates")
+    print(f"\nNote: Typical PPO configurations use 10-50 updates per rollout.")
+    print(f"      Higher values ({num_updates_per_rollout:.0f}+) may indicate:")
+    print(f"      - Slower training (more computation per rollout)")
+    print(f"      - Risk of overfitting to current batch")
+    print(f"      - Consider reducing n_epochs or increasing batch_sz")
+    print("=" * 80 + "\n")
+    
     if not confirm(
             colored(
-                f"the current config results in {num_updates_per_rollout} number of updates per rollout. Continue? ",
-                "green",
+                f"⚠️  Continue with {num_updates_per_rollout:.1f} updates per rollout? ",
+                "yellow",
                 attrs=["bold"])):
-        print("Aborting.")
+        print(colored("Aborting training.", "red", attrs=["bold"]))
         os._exit(1)
     else:
-        print("Okay.")
+        print(colored("✓ Proceeding with training...", "green", attrs=["bold"]))
+        print()
 
-    model.terrain_type = config["problem"]["terrain_type"]
+    model.terrain_type = config.get("problem", {}).get("terrain", {}).get("type", "unknown")
     model.learn(total_timesteps=total_timesteps, callback=callback)
 
     vec_env.close()

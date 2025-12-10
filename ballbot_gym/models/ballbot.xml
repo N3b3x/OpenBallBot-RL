@@ -4,7 +4,10 @@
   <option cone="elliptic"/>
   <option integrator="RK4"/>
 
-  <visual><map znear="0.0001" zfar="1.0"/></visual> <!-- Note that the actual far clipping plane is zfar*model.stats.extent. In the current settings, extent is ~14.14 (the documentation isn't clear on how this is computed) -->
+  <visual>
+    <map znear="0.0001" zfar="1.0"/>
+    <global offwidth="640" offheight="640"/>
+  </visual> <!-- Note that the actual far clipping plane is zfar*model.stats.extent. In the current settings, extent is ~14.14 (the documentation isn't clear on how this is computed) -->
 
 
   <asset>
@@ -24,6 +27,10 @@
   <worldbody>
 
     <light name="top" pos="0 0 10.0"/>
+
+    <!-- World-view camera for video recording (third-person view) -->
+    <!-- This camera provides a good view of the robot in action -->
+    <camera name="world_view" mode="fixed" pos="0 -2.0 1.5" euler="0 15 0" fovy="60"/>
 
     <geom name="terrain" type="hfield" hfield="terrain" size="5 5 0.1" pos="0 0 0" />
     

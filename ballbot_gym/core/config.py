@@ -161,8 +161,13 @@ def get_component_config(
         >>> reward_config
         {"type": "directional", "config": {"target_direction": [0, 1]}}
     """
+    # Check both top-level (for env configs) and under "problem" (for training configs)
     problem_config = config.get("problem", {})
     component_config = problem_config.get(component_type, {})
+    
+    # If not found under "problem", check top level (for environment configs)
+    if not component_config:
+        component_config = config.get(component_type, {})
     
     # Handle backward compatibility: if component_type is a string, treat as type
     if isinstance(component_config, str):
