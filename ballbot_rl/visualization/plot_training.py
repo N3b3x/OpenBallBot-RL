@@ -173,21 +173,44 @@ def plot_loss_evolutions(csv_file, config_file):
     plt.show()
 
 
+def main():
+    """CLI entry point for plotting training progress."""
+    parser = argparse.ArgumentParser(
+        description="Plot training progress from CSV logs",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Plot evaluation progress only
+  ballbot-plot-training --csv outputs/experiments/runs/.../progress.csv --config outputs/experiments/runs/.../config.yaml
+  
+  # Plot both training and evaluation progress
+  ballbot-plot-training --csv outputs/experiments/runs/.../progress.csv --config outputs/experiments/runs/.../config.yaml --plot_train
+  
+  # Or as Python module
+  python -m ballbot_rl.visualization.plot_training --csv .../progress.csv --config .../config.yaml
+        """
+    )
+    parser.add_argument(
+        '--csv',
+        type=str,
+        required=True,
+        help="Path to progress.csv file from training run"
+    )
+    parser.add_argument(
+        '--config',
+        type=str,
+        required=True,
+        help="Path to config.yaml file from training run"
+    )
+    parser.add_argument(
+        "--plot_train",
+        action="store_true",
+        help="Also plot training stats (rollout metrics) in addition to evaluation"
+    )
+
+    args = parser.parse_args()
+    plot_train_val_progress(args.csv, eval_only=not args.plot_train)
+
+
 if __name__ == "__main__":
-
-    _parser = argparse.ArgumentParser(description="Plotting from logs")
-    _parser.add_argument('--csv',
-                         type=str,
-                         required=True,
-                         help="your csv file")
-    _parser.add_argument('--config',
-                         type=str,
-                         required=True,
-                         help="your config.yaml")
-    _parser.add_argument("--plot_train",
-                         action="store_true",
-                         help="also plots training stats if passed to script")
-
-    _args = _parser.parse_args()
-
-    plot_train_val_progress(_args.csv, eval_only=not _args.plot_train)
+    main()
